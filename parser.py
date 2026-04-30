@@ -3,8 +3,67 @@ import sys
 from pathlib import Path
 
 
+def sum_usage(jsonl_path: Path) -> dict:
+    """Sum token usage from a single JSONL file."""
+    totals = {"input_tokens": 0, "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 0, "output_tokens": 0}
+    for line in jsonl_path.read_text().strip().splitlines():
+        try:
+            rec = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        msg = rec.get("message", {})
+        if isinstance(msg, dict) and "usage" in msg:
+            u = msg["usage"]
+            for key in totals:
+                totals[key] += u.get(key, 0)
+    return totals
+
+
+def collect_usage(jsonl_path: Path) -> dict:
+    """Sum token usage from main session + all subagent logs."""
+    totals = sum_usage(jsonl_path)
+
+    session_id = jsonl_path.stem
+    subagents_dir = jsonl_path.parent / session_id / "subagents"
+    if subagents_dir.is_dir():
+        for sub_file in subagents_dir.glob("*.jsonl"):
+            sub_totals = sum_usage(sub_file)
+            for key in totals:
+                totals[key] += sub_totals[key]
+
+    totals["total_input"] = (totals["input_tokens"]
+                             + totals["cache_creation_input_tokens"]
+                             + totals["cache_read_input_tokens"])
+    totals["total_output"] = totals["output_tokens"]
+    return totals
+
+
+def calc_weighted_cost(usage: dict) -> float:
+    """Weighted token cost (dimensionless). Coefficients = API pricing
+    per MTok (3 / 3.75 / 0.3 / 15) used as-is without currency label."""
+    return (
+        usage["input_tokens"] / 1_000_000
+        + usage["cache_creation_input_tokens"] * 1.25 / 1_000_000
+        + usage["cache_read_input_tokens"] * 0.1 / 1_000_000
+        + usage["output_tokens"] * 5.0 / 1_000_000
+    )
+
+
+def format_usage(usage: dict) -> str:
+    weighted = calc_weighted_cost(usage)
+    return (
+        f"input: {usage['input_tokens']:,} "
+        f"| cache_create: {usage['cache_creation_input_tokens']:,} "
+        f"| cache_read: {usage['cache_read_input_tokens']:,} "
+        f"| output: {usage['output_tokens']:,} "
+        f"| **стоимость: {weighted:.2f} у.е.**"
+    )
+
+
 def parse_jsonl(path: str) -> str:
-    lines = Path(path).read_text().strip().splitlines()
+    jsonl_path = Path(path)
+    lines = jsonl_path.read_text().strip().splitlines()
     records = []
     for line in lines:
         try:
@@ -49,12 +108,17 @@ def parse_jsonl(path: str) -> str:
                     elif block.get("type") == "thinking":
                         pass
 
+    # Append token usage summary
+    usage = collect_usage(jsonl_path)
+    output.append("\n---\n")
+    output.append(f"**Токены:** {format_usage(usage)}")
+
     return "\n".join(output)
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("usage: python parse_experiment.py <file.jsonl> [output.md]")
+        print("usage: python parser.py <file.jsonl> [output.md]")
         sys.exit(1)
 
     result = parse_jsonl(sys.argv[1])
