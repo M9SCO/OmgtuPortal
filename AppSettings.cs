@@ -21,6 +21,9 @@ public sealed class AppSettings
 
     public bool AutoLogin { get; init; }
 
+    public string? UniversityProvider { get; init; }
+    public string? UniversityBaseUrl { get; init; }
+
     public string Authority => $"{KeycloakUrl.TrimEnd('/')}/realms/{KeycloakRealm}";
 
     public static AppSettings FromEnvironment()
@@ -33,6 +36,8 @@ public sealed class AppSettings
             KeycloakClientId = GetRequired("KEYCLOAK_CLIENT_ID"),
             CorsOrigins = GetRequired("CORS_ORIGINS"),
             AutoLogin = Environment.GetEnvironmentVariable("AUTOLOGIN")?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false,
+            UniversityProvider = Environment.GetEnvironmentVariable("UNIVERSITY_PROVIDER"),
+            UniversityBaseUrl = Environment.GetEnvironmentVariable("UNIVERSITY_BASE_URL"),
         };
 
         Validate(settings);

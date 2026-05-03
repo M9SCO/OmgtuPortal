@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OmgtuPortal;
 using OmgtuPortal.Data;
+using OmgtuPortal.University;
 using Scalar.AspNetCore;
 
 DotEnv.Load();
@@ -105,6 +106,28 @@ else
 }
 
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
+
+// University client
+switch (appSettings.UniversityProvider?.ToLowerInvariant())
+{
+    case "local" or null or "":
+        builder.Services.AddSingleton<IUniversityClient, LocalUniversityClient>();
+        break;
+    case "http":
+        if (string.IsNullOrWhiteSpace(appSettings.UniversityBaseUrl))
+            throw new InvalidOperationException(
+                "UNIVERSITY_BASE_URL is required when UNIVERSITY_PROVIDER=http");
+        builder.Services.AddHttpClient<IUniversityClient, HttpUniversityClient>(client =>
+        {
+            client.BaseAddress = new Uri(appSettings.UniversityBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
+        break;
+    default:
+        throw new InvalidOperationException(
+            $"Unknown UNIVERSITY_PROVIDER '{appSettings.UniversityProvider}'. Supported values: local, http");
+}
 
 var app = builder.Build();
 
@@ -131,6 +154,8 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(builder.Environment.ContentRootPath, ".frontend", "dist")),
     RequestPath = ""
 });
+
+app.MapControllers();
 
 // Endpoints
 
