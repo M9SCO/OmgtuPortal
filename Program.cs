@@ -1,6 +1,7 @@
 using dotenv.net;
 using Microsoft.Extensions.FileProviders;
 using OmgtuPortal;
+using Scalar.AspNetCore;
 
 DotEnv.Load();
 
@@ -16,6 +17,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference("/docs");
 }
 
 app.UseStaticFiles(new StaticFileOptions
@@ -25,13 +27,15 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = ""
 });
 
-app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy" }));
+app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy" }))
+    .Produces<object>(StatusCodes.Status200OK);
 
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api"))
     {
         context.Response.StatusCode = 404;
+        await context.Response.WriteAsJsonAsync(new { Error = "Not Found" });
         return;
     }
 
