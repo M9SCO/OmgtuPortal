@@ -4,10 +4,12 @@ using System.Text.Json;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OmgtuPortal;
+using OmgtuPortal.Data;
 using Scalar.AspNetCore;
 
 DotEnv.Load();
@@ -18,6 +20,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton(appSettings);
 builder.Services.AddOpenApi();
+
+// Database
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    if (builder.Environment.IsDevelopment())
+        options.UseSqlite("Data Source=app.db");
+    else
+        options.UseNpgsql(appSettings.DatabaseUrl);
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -96,6 +107,13 @@ else
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Auto-apply migrations
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
