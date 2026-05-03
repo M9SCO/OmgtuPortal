@@ -1,7 +1,14 @@
+using dotenv.net;
 using Microsoft.Extensions.FileProviders;
+using OmgtuPortal;
+
+DotEnv.Load();
+
+var appSettings = AppSettings.FromEnvironment();
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton(appSettings);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
