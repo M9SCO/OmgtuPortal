@@ -8,27 +8,31 @@ public sealed class AppSettings
     public required string DatabaseUrl { get; init; }
 
     [Required]
-    [MinLength(32)]
-    public required string JwtSecret { get; init; }
+    public required string KeycloakUrl { get; init; }
 
     [Required]
-    public required string JwtIssuer { get; init; }
+    public required string KeycloakRealm { get; init; }
+
+    [Required]
+    public required string KeycloakClientId { get; init; }
 
     [Required]
     public required string CorsOrigins { get; init; }
 
-    /// <summary>
-    /// Creates AppSettings from environment variables.
-    /// Throws if any required variable is missing.
-    /// </summary>
+    public bool AutoLogin { get; init; }
+
+    public string Authority => $"{KeycloakUrl.TrimEnd('/')}/realms/{KeycloakRealm}";
+
     public static AppSettings FromEnvironment()
     {
         var settings = new AppSettings
         {
             DatabaseUrl = GetRequired("DATABASE_URL"),
-            JwtSecret = GetRequired("JWT_SECRET"),
-            JwtIssuer = GetRequired("JWT_ISSUER"),
+            KeycloakUrl = GetRequired("KEYCLOAK_URL"),
+            KeycloakRealm = GetRequired("KEYCLOAK_REALM"),
+            KeycloakClientId = GetRequired("KEYCLOAK_CLIENT_ID"),
             CorsOrigins = GetRequired("CORS_ORIGINS"),
+            AutoLogin = Environment.GetEnvironmentVariable("AUTOLOGIN")?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false,
         };
 
         Validate(settings);
