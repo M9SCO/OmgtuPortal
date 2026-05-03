@@ -8,12 +8,6 @@ namespace OmgtuPortal.Controllers;
 [Route("api/[controller]")]
 public class GroupsController(IUniversityClient universityClient) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        return Ok(await universityClient.GetStudentGroupsAsync());
-    }
-
     [HttpGet("my")]
     [Authorize]
     public async Task<IActionResult> GetMy()

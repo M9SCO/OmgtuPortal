@@ -7,10 +7,21 @@ const keycloak = new Keycloak({
 })
 
 export async function initAuth(): Promise<boolean> {
-  const authenticated = await keycloak.init({
-    onLoad: 'login-required',
-    checkLoginIframe: false,
-  })
+  let authenticated = false
+  try {
+    authenticated = await keycloak.init({
+      onLoad: 'login-required',
+      checkLoginIframe: false,
+      responseMode: 'query',
+    })
+  } finally {
+    // Clean any leftover Keycloak params from URL
+    const url = new URL(window.location.href)
+    const keycloakParams = ['state', 'session_state', 'code', 'iss']
+    keycloakParams.forEach((p) => url.searchParams.delete(p))
+    url.hash = ''
+    window.history.replaceState(null, '', url.pathname + url.search)
+  }
 
   if (authenticated) {
     // Auto-refresh token before it expires
@@ -32,6 +43,10 @@ export function getToken(): string | undefined {
 
 export function logout(): void {
   keycloak.logout({ redirectUri: window.location.origin })
+}
+
+export function getUserRoles(): string[] {
+  return keycloak.realmAccess?.roles ?? []
 }
 
 export { keycloak }
