@@ -24,6 +24,9 @@ public sealed class AppSettings
     public string? UniversityProvider { get; init; }
     public string? UniversityBaseUrl { get; init; }
 
+    public string UploadsPath { get; init; } = "Uploads";
+    public long MaxFileSizeMb { get; init; } = 50;
+
     public string Authority => $"{KeycloakUrl.TrimEnd('/')}/realms/{KeycloakRealm}";
 
     public static AppSettings FromEnvironment()
@@ -38,6 +41,8 @@ public sealed class AppSettings
             AutoLogin = Environment.GetEnvironmentVariable("AUTOLOGIN")?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false,
             UniversityProvider = Environment.GetEnvironmentVariable("UNIVERSITY_PROVIDER"),
             UniversityBaseUrl = Environment.GetEnvironmentVariable("UNIVERSITY_BASE_URL"),
+            UploadsPath = Environment.GetEnvironmentVariable("UPLOADS_PATH") ?? "Uploads",
+            MaxFileSizeMb = long.TryParse(Environment.GetEnvironmentVariable("MAX_FILE_SIZE_MB"), out var maxSize) ? maxSize : 50,
         };
 
         Validate(settings);

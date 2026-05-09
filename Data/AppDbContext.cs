@@ -5,6 +5,8 @@ namespace OmgtuPortal.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    public DbSet<ControlWork> ControlWorks => Set<ControlWork>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
