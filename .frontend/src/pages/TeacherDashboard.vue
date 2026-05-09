@@ -1,16 +1,6 @@
-<script setup lang="ts">
-import { logout } from '../auth'
-</script>
-
 <template>
   <div class="container">
-    <header class="header">
-      <h1>Панель преподавателя</h1>
-      <div class="actions">
-        <router-link to="/" class="back-link">На главную</router-link>
-        <button class="logout-btn" @click="logout()">Logout</button>
-      </div>
-    </header>
+    <h1>Панель преподавателя</h1>
     <nav class="teacher-nav">
       <router-link to="/teacher/students" class="card">
         <span class="card-icon">&#128218;</span>
@@ -28,40 +18,9 @@ import { logout } from '../auth'
   padding: 0 1rem;
   font-family: system-ui, sans-serif;
 }
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-.header h1 {
+h1 {
   font-size: 1.5rem;
-  margin: 0;
-}
-.actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-.back-link {
-  color: #3182ce;
-  text-decoration: none;
-  font-size: 0.875rem;
-}
-.back-link:hover {
-  text-decoration: underline;
-}
-.logout-btn {
-  padding: 0.4rem 1rem;
-  border: none;
-  border-radius: 6px;
-  background: #e53e3e;
-  color: white;
-  cursor: pointer;
-  font-size: 0.875rem;
-}
-.logout-btn:hover {
-  background: #c53030;
+  margin: 0 0 2rem;
 }
 .teacher-nav {
   display: grid;

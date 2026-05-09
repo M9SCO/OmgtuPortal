@@ -1,12 +1,23 @@
 import Keycloak from 'keycloak-js'
 
-const keycloak = new Keycloak({
-  url: import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8080',
-  realm: import.meta.env.VITE_KEYCLOAK_REALM || 'upomgtu',
-  clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'upomgtu',
-})
+const ALL_ROLES = ['admin', 'user', 'student', 'teacher']
+
+let autoLogin = false
+let keycloak: Keycloak | null = null
 
 export async function initAuth(): Promise<boolean> {
+  const res = await fetch('/api/auth/config')
+  const config = await res.json()
+  autoLogin = config.autoLogin
+
+  if (autoLogin) return true
+
+  keycloak = new Keycloak({
+    url: import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8080',
+    realm: import.meta.env.VITE_KEYCLOAK_REALM || 'upomgtu',
+    clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'upomgtu',
+  })
+
   let authenticated = false
   try {
     authenticated = await keycloak.init({
@@ -15,7 +26,6 @@ export async function initAuth(): Promise<boolean> {
       responseMode: 'query',
     })
   } finally {
-    // Clean any leftover Keycloak params from URL
     const url = new URL(window.location.href)
     const keycloakParams = ['state', 'session_state', 'code', 'iss']
     keycloakParams.forEach((p) => url.searchParams.delete(p))
@@ -24,12 +34,11 @@ export async function initAuth(): Promise<boolean> {
   }
 
   if (authenticated) {
-    // Auto-refresh token before it expires
     setInterval(async () => {
       try {
-        await keycloak.updateToken(30)
+        await keycloak!.updateToken(30)
       } catch {
-        keycloak.login()
+        keycloak!.login()
       }
     }, 10_000)
   }
@@ -38,15 +47,19 @@ export async function initAuth(): Promise<boolean> {
 }
 
 export function getToken(): string | undefined {
-  return keycloak.token
+  if (autoLogin) return undefined
+  return keycloak?.token
 }
 
 export function logout(): void {
-  keycloak.logout({ redirectUri: window.location.origin })
+  if (autoLogin) {
+    window.location.reload()
+    return
+  }
+  keycloak?.logout({ redirectUri: window.location.origin })
 }
 
 export function getUserRoles(): string[] {
-  return keycloak.realmAccess?.roles ?? []
+  if (autoLogin) return ALL_ROLES
+  return keycloak?.realmAccess?.roles ?? []
 }
-
-export { keycloak }

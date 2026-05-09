@@ -162,6 +162,12 @@ app.MapControllers();
 app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy" }))
     .Produces<object>(StatusCodes.Status200OK);
 
+app.MapGet("/api/auth/config", (AppSettings settings) => Results.Ok(new
+    {
+        AutoLogin = settings.AutoLogin,
+    }))
+    .Produces<object>(StatusCodes.Status200OK);
+
 app.MapGet("/api/me", (ClaimsPrincipal user) => Results.Ok(new
     {
         Sub = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? user.FindFirstValue("sub"),

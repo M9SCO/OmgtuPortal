@@ -28,10 +28,7 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <header class="header">
-      <h1>Студенты</h1>
-      <router-link to="/teacher" class="back-link">Назад</router-link>
-    </header>
+    <h1>Студенты</h1>
     <div v-if="loading" class="loading">Загрузка...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <ul v-else class="group-list">
@@ -49,23 +46,9 @@ onMounted(async () => {
   padding: 0 1rem;
   font-family: system-ui, sans-serif;
 }
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-}
-.header h1 {
+h1 {
   font-size: 1.5rem;
-  margin: 0;
-}
-.back-link {
-  color: #3182ce;
-  text-decoration: none;
-  font-size: 0.875rem;
-}
-.back-link:hover {
-  text-decoration: underline;
+  margin: 0 0 1.5rem;
 }
 .loading {
   text-align: center;
