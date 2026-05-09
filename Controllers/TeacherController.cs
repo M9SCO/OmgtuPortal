@@ -17,4 +17,10 @@ public class TeacherController(IUniversityClient universityClient) : ControllerB
     {
         return Ok(await universityClient.GetStudentGroupsAsync());
     }
+
+    [HttpGet("subjects")]
+    public async Task<IActionResult> GetSubjects()
+    {
+        return Ok(await universityClient.GetSubjectsAsync());
+    }
 }

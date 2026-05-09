@@ -7,6 +7,11 @@
         <span class="card-title">Студенты</span>
         <span class="card-desc">Просмотр списков групп</span>
       </router-link>
+      <router-link to="/teacher/control-work" class="card">
+        <span class="card-icon">&#128196;</span>
+        <span class="card-title">Контрольные</span>
+        <span class="card-desc">Загрузка контрольных работ</span>
+      </router-link>
     </nav>
   </div>
 </template>

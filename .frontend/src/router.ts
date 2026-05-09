@@ -5,6 +5,7 @@ import { getUserRoles } from './auth'
 import HomePage from './pages/HomePage.vue'
 import TeacherDashboard from './pages/TeacherDashboard.vue'
 import TeacherStudents from './pages/TeacherStudents.vue'
+import TeacherControlWork from './pages/TeacherControlWork.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -30,6 +31,12 @@ const router = createRouter({
       path: '/teacher/students',
       name: 'teacher-students',
       component: TeacherStudents,
+      meta: { requiredRoles: ['teacher', 'admin'] },
+    },
+    {
+      path: '/teacher/control-work',
+      name: 'teacher-control-work',
+      component: TeacherControlWork,
       meta: { requiredRoles: ['teacher', 'admin'] },
     },
   ],

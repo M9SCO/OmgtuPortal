@@ -14,6 +14,16 @@ public class LocalUniversityClient : IUniversityClient
         new("8", "МАТ-101"),
     ];
 
+    private static readonly IReadOnlyList<Subject> Subjects =
+    [
+        new("1", "Математический анализ"),
+        new("2", "Линейная алгебра"),
+        new("3", "Программирование"),
+        new("4", "Базы данных"),
+        new("5", "Операционные системы"),
+        new("6", "Компьютерные сети"),
+    ];
+
     private static readonly Dictionary<string, string> SubToGroup = new()
     {
         ["dev-user-id"] = "1",
@@ -27,4 +37,7 @@ public class LocalUniversityClient : IUniversityClient
         SubToGroup.TryGetValue(sub, out var groupId);
         return Task.FromResult(groupId);
     }
+
+    public Task<IReadOnlyList<Subject>> GetSubjectsAsync() =>
+        Task.FromResult(Subjects);
 }

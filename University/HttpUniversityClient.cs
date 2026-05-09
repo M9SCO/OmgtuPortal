@@ -16,5 +16,11 @@ public class HttpUniversityClient(HttpClient httpClient) : IUniversityClient
         return response?.GroupId;
     }
 
+    public async Task<IReadOnlyList<Subject>> GetSubjectsAsync()
+    {
+        var subjects = await httpClient.GetFromJsonAsync<List<Subject>>("subjects");
+        return subjects ?? [];
+    }
+
     private record GroupIdResponse(string? GroupId);
 }

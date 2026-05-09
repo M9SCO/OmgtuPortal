@@ -71,6 +71,26 @@ public class ControlWorkController(AppDbContext db, AppSettings settings) : Cont
     }
 
     /// <summary>
+    /// Удаление контрольной работы по id.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var file = await db.ControlWorks.FindAsync(id);
+        if (file is null)
+            return NotFound(new { Error = "Файл не найден" });
+
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), settings.UploadsPath, file.StoredPath);
+        if (System.IO.File.Exists(fullPath))
+            System.IO.File.Delete(fullPath);
+
+        db.ControlWorks.Remove(file);
+        await db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    /// <summary>
     /// Список контрольных работ (опционально по группе).
     /// </summary>
     [HttpGet]
