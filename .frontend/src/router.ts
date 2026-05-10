@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage.vue'
 import TeacherDashboard from './pages/TeacherDashboard.vue'
 import TeacherStudents from './pages/TeacherStudents.vue'
 import TeacherControlWork from './pages/TeacherControlWork.vue'
+import StudentFiles from './pages/StudentFiles.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -20,6 +21,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomePage,
+    },
+    {
+      path: '/files',
+      name: 'student-files',
+      component: StudentFiles,
+      meta: { requiredRoles: ['student', 'admin'] },
     },
     {
       path: '/teacher',

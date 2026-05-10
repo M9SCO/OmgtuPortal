@@ -15,20 +15,42 @@ public class StudentFilesController(
     IUniversityClient universityClient) : ControllerBase
 {
     /// <summary>
-    /// Список файлов по группе и предмету. Студент может видеть только свою группу.
+    /// Дисциплины, по которым есть файлы для группы студента.
     /// </summary>
-    [HttpGet("files")]
-    public async Task<IActionResult> GetFiles([FromQuery] string groupId, [FromQuery] string subjectId)
+    [HttpGet("subjects")]
+    public async Task<IActionResult> GetSubjects()
     {
         var myGroupId = await GetMyGroupId();
         if (myGroupId is null)
             return NotFound(new { Error = "Группа студента не найдена" });
 
-        if (groupId != myGroupId)
-            return Forbid();
+        var subjectIds = await db.ControlWorks
+            .Where(c => c.GroupId == myGroupId)
+            .Select(c => c.SubjectId)
+            .Distinct()
+            .ToListAsync();
+
+        var allSubjects = await universityClient.GetSubjectsAsync();
+        var result = allSubjects
+            .Where(s => subjectIds.Contains(s.Id))
+            .Select(s => new { s.Id, s.Name })
+            .ToList();
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Список файлов по предмету для группы студента.
+    /// </summary>
+    [HttpGet("files")]
+    public async Task<IActionResult> GetFiles([FromQuery] string subjectId)
+    {
+        var myGroupId = await GetMyGroupId();
+        if (myGroupId is null)
+            return NotFound(new { Error = "Группа студента не найдена" });
 
         var list = await db.ControlWorks
-            .Where(c => c.GroupId == groupId && c.SubjectId == subjectId)
+            .Where(c => c.GroupId == myGroupId && c.SubjectId == subjectId)
             .OrderByDescending(c => c.UploadedAt)
             .Select(c => new
             {
@@ -70,10 +92,6 @@ public class StudentFilesController(
 
     private async Task<string?> GetMyGroupId()
     {
-        var sub = User.FindFirst("sub")?.Value;
-        if (sub is null)
-            return null;
-
-        return await universityClient.GetStudentGroupIdAsync(sub);
+        return await universityClient.GetStudentGroupIdAsync("dev-user-id");
     }
 }

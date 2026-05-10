@@ -11,6 +11,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Главная', to: '/' },
+  { label: 'Мои файлы', to: '/files', roles: ['student', 'admin'] },
   { label: 'Преподаватель', to: '/teacher', roles: ['teacher', 'admin'] },
 ]
 
