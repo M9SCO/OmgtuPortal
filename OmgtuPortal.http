@@ -1,0 +1,6 @@
+@OmgtuPortal_HostAddress = http://localhost:5178
+
+GET {{OmgtuPortal_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
