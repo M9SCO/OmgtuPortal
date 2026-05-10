@@ -1,6 +1,11 @@
 using Microsoft.Extensions.FileProviders;
+using OmgtuPortal.Configuration;
+
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton(AppSettings.Load());
 
 var app = builder.Build();
 
